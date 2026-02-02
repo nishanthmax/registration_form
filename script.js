@@ -1,108 +1,15 @@
-// Google Apps Script Web App URL - REPLACE WITH YOUR DEPLOYED URL
-const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_APPS_SCRIPT_ID/usercodeapp";
+// Google Apps Script Web App URL
+// Example: https://script.google.com/macros/s/AKfycbx.../exec
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTrX5J193PW0fsbmIW9MhE9PPSOjR3k0_sQbfozp8Dz21ADBXucsL-_laZaZZPnHZKGQ/exec";
 
-const statusKey = 'registrationStatus';
-
-const applications = [
-    'Google Drive',
-    'Google Docs',
-    'Google Sheets',
-    'Google Slides',
-    'Google Calendar',
-    'Gmail',
-    'Google Meet',
-    'Notion',
-    'Microsoft OneNote',
-    'Trello',
-    'Todoist',
-    'Clockify',
-    'LinkedIn',
-    'LinkedIn Learning',
-    'Coursera',
-    'Udemy',
-    'Khan Academy',
-    'GitHub',
-    'GitHub Desktop',
-    'Visual Studio Code',
-    'ChatGPT',
-    'Replit',
-    'Canva',
-    'Figma',
-    'Adobe Express',
-    'Indeed',
-    'Naukri',
-    'Internshala',
-    'Glassdoor',
-    'Google Forms',
-    'WhatsApp',
-    'Instagram',
-    'YouTube',
-    'Telegram',
-    'X (Twitter)'
-];
-
-// DOM Elements
-const hamburgerBtn = document.getElementById('hamburgerBtn');
-const menu = document.getElementById('menu');
-const statusAlert = document.getElementById('statusAlert');
-const statusText = document.getElementById('statusText');
 const appSelect = document.getElementById('application');
-const form = document.getElementById('registrationForm');
-const submitBtn = document.getElementById('submitBtn');
+const registrationForm = document.getElementById('registrationForm');
 const messageDiv = document.getElementById('message');
+const submitButton = registrationForm.querySelector('button[type="submit"]');
 
-let isRegistrationOpen = false;
+const applications = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT'];
 
-// Hamburger Menu Toggle
-hamburgerBtn.addEventListener('click', () => {
-    hamburgerBtn.classList.toggle('active');
-    menu.classList.toggle('hidden');
-});
-
-function closeMenu() {
-    hamburgerBtn.classList.remove('active');
-    menu.classList.add('hidden');
-}
-
-// Check Registration Status on Load
-window.addEventListener('load', () => {
-    checkRegistrationStatus();
-    setInterval(checkRegistrationStatus, 5000); // Check every 5 seconds
-});
-
-function checkRegistrationStatus() {
-    const status = localStorage.getItem(statusKey) || 'OFF';
-    isRegistrationOpen = status === 'ON';
-    
-    if (isRegistrationOpen) {
-        statusAlert.classList.add('hidden');
-        enableForm();
-    } else {
-        statusAlert.classList.remove('hidden');
-        disableForm();
-    }
-}
-
-function disableForm() {
-    const inputs = form.querySelectorAll('input, select, button');
-    inputs.forEach(input => {
-        if (input.id !== 'submitBtn') {
-            input.disabled = true;
-        }
-    });
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Registrations Closed';
-}
-
-function enableForm() {
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-        input.disabled = false;
-    });
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Register';
-}
-
+// Function to show messages
 function showMessage(message, type) {
     messageDiv.textContent = message;
     messageDiv.className = 'message ' + type;
@@ -111,40 +18,96 @@ function showMessage(message, type) {
     }, 5000);
 }
 
-// Form Submission
-form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    if (!isRegistrationOpen) {
-        showMessage('Registrations are currently closed.', 'error');
-        return;
-    }
+// Function to load application counts from Google Sheets via Apps Script
+async function loadApplicationCounts() {
+    appSelect.innerHTML = '';
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-    form.classList.add('loading');
-
-    const formData = new FormData(form);
-    formData.append('_subject', 'New Vibe Zone Registration');
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select Application';
+    appSelect.appendChild(defaultOption);
 
     try {
-        const response = await fetch('https://formspree.io/f/mbdkpjpb', {
+        const response = await fetch(`${SCRIPT_URL}?action=slots`, { method: 'GET' });
+        const data = await response.json();
+
+        if (!data || !data.slots) {
+            throw new Error('Invalid slots data');
+        }
+
+        applications.forEach(app => {
+            const slotInfo = data.slots[app] || { count: 0, remaining: 2, full: false };
+            const option = document.createElement('option');
+            option.value = app;
+            option.textContent = `${app} (${slotInfo.count}/2 registered)`;
+
+            if (slotInfo.full) {
+                option.disabled = true;
+                option.textContent += ' - FULL';
+            }
+
+            appSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading slots:', error);
+        applications.forEach(app => {
+            const option = document.createElement('option');
+            option.value = app;
+            option.textContent = app;
+            appSelect.appendChild(option);
+        });
+        showMessage('Unable to load real-time slots. Please refresh.', 'error');
+    }
+}
+
+// Load application counts on page load and refresh periodically
+loadApplicationCounts();
+setInterval(loadApplicationCounts, 15000);
+
+// Form submission handler
+registrationForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    // Disable form during submission
+    submitButton.disabled = true;
+    submitButton.textContent = 'Submitting...';
+    registrationForm.classList.add('loading');
+    
+    const formData = {
+        name: document.getElementById('fullName').value.trim(),
+        department: document.getElementById('department').value.trim(),
+        year: document.getElementById('year').value,
+        email: document.getElementById('email').value.trim().toLowerCase(),
+        phone: document.getElementById('mobile').value.trim(),
+        application: appSelect.value
+    };
+    
+    try {
+        if (!SCRIPT_URL || SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+            throw new Error('Apps Script URL not configured');
+        }
+
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: formData
+            body: JSON.stringify({ action: 'register', data: formData })
         });
 
-        if (response.ok) {
-            showMessage(`✅ Registration successful for ${appSelect.value}!`, 'success');
-            form.reset();
-        } else {
-            showMessage('Registration failed. Please try again.', 'error');
+        const result = await response.json();
+
+        if (!result.success) {
+            showMessage(result.message || 'Registration failed.', 'error');
+            return;
         }
+
+        showMessage(`Registration successful for ${formData.application}!`, 'success');
+        registrationForm.reset();
+        await loadApplicationCounts();
     } catch (error) {
-        console.error('Error:', error);
-        showMessage('Registration failed. Please try again.', 'error');
+        console.error('Error during registration:', error);
+        showMessage('Registration failed. Please try again. Error: ' + error.message, 'error');
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Register';
-        form.classList.remove('loading');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Register';
+        registrationForm.classList.remove('loading');
     }
 });

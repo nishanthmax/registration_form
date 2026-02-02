@@ -7,24 +7,6 @@
     <title>Registration Form</title>
 </head>
 <body>
-    <!-- Hamburger Menu -->
-    <div class="hamburger-container">
-        <button id="hamburgerBtn" class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div id="menu" class="menu hidden">
-            <a href="#" onclick="window.location.href='admin.html'">Admin Login</a>
-            <a href="#" onclick="closeMenu()">Close Menu</a>
-        </div>
-    </div>
-
-    <!-- Status Alert -->
-    <div id="statusAlert" class="status-alert hidden">
-        <p id="statusText">Registrations are currently closed. Please wait for admin approval.</p>
-    </div>
-
     <div class="container">
         <div class="branding">
             <img src="https://image2url.com/r2/default/images/1770038733791-77172792-f6ba-4fc8-9acd-bfc06e836ea2.png" alt="Vibe Zone Logo" class="logo-top">
@@ -101,7 +83,98 @@
             <button type="submit" id="submitBtn">Register</button>
         </form>
     </div>
+    <script>
+        // Track app selections
+        const appCounts = JSON.parse(localStorage.getItem('appCounts')) || {};
+        const applications = [
+            'Google Drive',
+            'Google Docs',
+            'Google Sheets',
+            'Google Slides',
+            'Google Calendar',
+            'Gmail',
+            'Google Meet',
+            'Notion',
+            'Microsoft OneNote',
+            'Trello',
+            'Todoist',
+            'Clockify',
+            'LinkedIn',
+            'LinkedIn Learning',
+            'Coursera',
+            'Udemy',
+            'Khan Academy',
+            'GitHub',
+            'GitHub Desktop',
+            'Visual Studio Code',
+            'ChatGPT',
+            'Replit',
+            'Canva',
+            'Figma',
+            'Adobe Express',
+            'Indeed',
+            'Naukri',
+            'Internshala',
+            'Glassdoor',
+            'Google Forms',
+            'WhatsApp',
+            'Instagram',
+            'YouTube',
+            'Telegram',
+            'X (Twitter)'
+        ];
 
-    <script src="script.js"></script>
+        const appSelect = document.getElementById('application');
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Initialize app counts
+        applications.forEach(app => {
+            if (!appCounts[app]) appCounts[app] = 0;
+        });
+
+        // Update dropdown options to show count and disable full apps
+        function updateAppOptions() {
+            appSelect.innerHTML = '<option value="">Select Application</option>';
+            applications.forEach(app => {
+                const count = appCounts[app] || 0;
+                const option = document.createElement('option');
+                option.value = app;
+                option.textContent = `${app} (${count}/2 registered)`;
+                
+                if (count >= 2) {
+                    option.disabled = true;
+                    option.textContent += ' - FULL';
+                }
+                appSelect.appendChild(option);
+            });
+        }
+
+        // Update on load
+        updateAppOptions();
+
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            const selectedApp = appSelect.value;
+            
+            if (appCounts[selectedApp] >= 2) {
+                e.preventDefault();
+                alert('❌ This app is FULL. Maximum 2 participants reached. Please select another app.');
+                return false;
+            }
+
+            // Increment count after successful submission
+            appCounts[selectedApp] = (appCounts[selectedApp] || 0) + 1;
+            localStorage.setItem('appCounts', JSON.stringify(appCounts));
+
+            // Show success and update options
+            setTimeout(() => {
+                updateAppOptions();
+                alert('✅ Registration submitted!');
+            }, 500);
+        });
+    </script>
+
+    <!-- Formspree handles submission; no JS required -->
 </body>
 </html>
