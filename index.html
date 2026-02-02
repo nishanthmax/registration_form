@@ -41,11 +41,41 @@
             <label for="application">Select Application:</label>
             <select id="application" name="application" required>
                 <option value="">Select Application</option>
-                <option value="WhatsApp">WhatsApp</option>
-                <option value="Canva">Canva</option>
-                <option value="Google Pay">Google Pay</option>
-                <option value="Instagram">Instagram</option>
+                <option value="Google Drive">Google Drive</option>
+                <option value="Google Docs">Google Docs</option>
+                <option value="Google Sheets">Google Sheets</option>
+                <option value="Google Slides">Google Slides</option>
+                <option value="Google Calendar">Google Calendar</option>
+                <option value="Gmail">Gmail</option>
+                <option value="Google Meet">Google Meet</option>
+                <option value="Notion">Notion</option>
+                <option value="Microsoft OneNote">Microsoft OneNote</option>
+                <option value="Trello">Trello</option>
+                <option value="Todoist">Todoist</option>
+                <option value="Clockify">Clockify</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="LinkedIn Learning">LinkedIn Learning</option>
+                <option value="Coursera">Coursera</option>
+                <option value="Udemy">Udemy</option>
+                <option value="Khan Academy">Khan Academy</option>
+                <option value="GitHub">GitHub</option>
+                <option value="GitHub Desktop">GitHub Desktop</option>
+                <option value="Visual Studio Code">Visual Studio Code</option>
                 <option value="ChatGPT">ChatGPT</option>
+                <option value="Replit">Replit</option>
+                <option value="Canva">Canva</option>
+                <option value="Figma">Figma</option>
+                <option value="Adobe Express">Adobe Express</option>
+                <option value="Indeed">Indeed</option>
+                <option value="Naukri">Naukri</option>
+                <option value="Internshala">Internshala</option>
+                <option value="Glassdoor">Glassdoor</option>
+                <option value="Google Forms">Google Forms</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Instagram">Instagram</option>
+                <option value="YouTube">YouTube</option>
+                <option value="Telegram">Telegram</option>
+                <option value="X (Twitter)">X (Twitter)</option>
             </select>
 
             <input type="hidden" name="_subject" value="New Vibe Zone Registration">
@@ -56,7 +86,43 @@
     <script>
         // Track app selections
         const appCounts = JSON.parse(localStorage.getItem('appCounts')) || {};
-        const applications = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT'];
+        const applications = [
+            'Google Drive',
+            'Google Docs',
+            'Google Sheets',
+            'Google Slides',
+            'Google Calendar',
+            'Gmail',
+            'Google Meet',
+            'Notion',
+            'Microsoft OneNote',
+            'Trello',
+            'Todoist',
+            'Clockify',
+            'LinkedIn',
+            'LinkedIn Learning',
+            'Coursera',
+            'Udemy',
+            'Khan Academy',
+            'GitHub',
+            'GitHub Desktop',
+            'Visual Studio Code',
+            'ChatGPT',
+            'Replit',
+            'Canva',
+            'Figma',
+            'Adobe Express',
+            'Indeed',
+            'Naukri',
+            'Internshala',
+            'Glassdoor',
+            'Google Forms',
+            'WhatsApp',
+            'Instagram',
+            'YouTube',
+            'Telegram',
+            'X (Twitter)'
+        ];
 
         const appSelect = document.getElementById('application');
         const form = document.getElementById('registrationForm');
