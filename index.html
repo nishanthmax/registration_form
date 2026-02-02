@@ -76,7 +76,11 @@
                 <option value="YouTube">YouTube</option>
                 <option value="Telegram">Telegram</option>
                 <option value="X (Twitter)">X (Twitter)</option>
+                <option value="Other">Other</option>
             </select>
+
+            <label for="customApplication" id="customApplicationLabel" style="display: none;">Please specify the application:</label>
+            <input type="text" id="customApplication" name="customApplication" placeholder="Enter application name" style="display: none;">
 
             <input type="hidden" name="_subject" value="New Vibe Zone Registration">
 
@@ -84,6 +88,9 @@
         </form>
     </div>
     <script>
+        // Reset counts for fresh start (remove this line after testing)
+        localStorage.removeItem('appCounts');
+        
         // Track app selections
         const appCounts = JSON.parse(localStorage.getItem('appCounts')) || {};
         const applications = [
@@ -121,12 +128,29 @@
             'Instagram',
             'YouTube',
             'Telegram',
-            'X (Twitter)'
+            'X (Twitter)',
+            'Other'
         ];
 
         const appSelect = document.getElementById('application');
         const form = document.getElementById('registrationForm');
         const submitBtn = document.getElementById('submitBtn');
+        const customApplicationInput = document.getElementById('customApplication');
+        const customApplicationLabel = document.getElementById('customApplicationLabel');
+
+        // Handle "Other" option visibility
+        appSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                customApplicationInput.style.display = 'block';
+                customApplicationLabel.style.display = 'block';
+                customApplicationInput.required = true;
+            } else {
+                customApplicationInput.style.display = 'none';
+                customApplicationLabel.style.display = 'none';
+                customApplicationInput.required = false;
+                customApplicationInput.value = '';
+            }
+        });
 
         // Initialize app counts
         applications.forEach(app => {
@@ -137,14 +161,19 @@
         function updateAppOptions() {
             appSelect.innerHTML = '<option value="">Select Application</option>';
             applications.forEach(app => {
-                const count = appCounts[app] || 0;
                 const option = document.createElement('option');
                 option.value = app;
-                option.textContent = `${app} (${count}/2 registered)`;
                 
-                if (count >= 2) {
-                    option.disabled = true;
-                    option.textContent += ' - FULL';
+                if (app === 'Other') {
+                    option.textContent = 'Other';
+                } else {
+                    const count = appCounts[app] || 0;
+                    option.textContent = `${app} (${count}/2 registered)`;
+                    
+                    if (count >= 2) {
+                        option.disabled = true;
+                        option.textContent += ' - FULL';
+                    }
                 }
                 appSelect.appendChild(option);
             });

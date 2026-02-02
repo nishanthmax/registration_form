@@ -6,8 +6,24 @@ const appSelect = document.getElementById('application');
 const registrationForm = document.getElementById('registrationForm');
 const messageDiv = document.getElementById('message');
 const submitButton = registrationForm.querySelector('button[type="submit"]');
+const customApplicationInput = document.getElementById('customApplication');
+const customApplicationLabel = document.getElementById('customApplicationLabel');
 
-const applications = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT'];
+// Handle "Other" option visibility
+appSelect.addEventListener('change', function() {
+    if (this.value === 'Other') {
+        customApplicationInput.style.display = 'block';
+        customApplicationLabel.style.display = 'block';
+        customApplicationInput.required = true;
+    } else {
+        customApplicationInput.style.display = 'none';
+        customApplicationLabel.style.display = 'none';
+        customApplicationInput.required = false;
+        customApplicationInput.value = '';
+    }
+});
+
+const applications = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT', 'Other'];
 
 // Function to show messages
 function showMessage(message, type) {
@@ -36,14 +52,19 @@ async function loadApplicationCounts() {
         }
 
         applications.forEach(app => {
-            const slotInfo = data.slots[app] || { count: 0, remaining: 2, full: false };
             const option = document.createElement('option');
             option.value = app;
-            option.textContent = `${app} (${slotInfo.count}/2 registered)`;
+            
+            if (app === 'Other') {
+                option.textContent = 'Other';
+            } else {
+                const slotInfo = data.slots[app] || { count: 0, remaining: 2, full: false };
+                option.textContent = `${app} (${slotInfo.count}/2 registered)`;
 
-            if (slotInfo.full) {
-                option.disabled = true;
-                option.textContent += ' - FULL';
+                if (slotInfo.full) {
+                    option.disabled = true;
+                    option.textContent += ' - FULL';
+                }
             }
 
             appSelect.appendChild(option);
@@ -79,7 +100,7 @@ registrationForm.addEventListener('submit', async function(event) {
         year: document.getElementById('year').value,
         email: document.getElementById('email').value.trim().toLowerCase(),
         phone: document.getElementById('mobile').value.trim(),
-        application: appSelect.value
+        application: appSelect.value === 'Other' ? customApplicationInput.value.trim() : appSelect.value
     };
     
     try {
