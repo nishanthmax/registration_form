@@ -1,6 +1,5 @@
-// Google Apps Script Web App URL
-// Example: https://script.google.com/macros/s/AKfycbx.../exec
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTrX5J193PW0fsbmIW9MhE9PPSOjR3k0_sQbfozp8Dz21ADBXucsL-_laZaZZPnHZKGQ/exec";
+// Formspree Configuration
+const FORMSPREE_ID = "mbdkpjpb";
 
 const appSelect = document.getElementById('application');
 const registrationForm = document.getElementById('registrationForm');
@@ -71,8 +70,31 @@ function showMessage(message, type) {
     }, 5000);
 }
 
-// Function to load application counts from Google Sheets via Apps Script
-async function loadApplicationCounts() {
+// Function to get registration counts from localStorage
+function getRegistrationCounts() {
+    const stored = localStorage.getItem('appRegistrations');
+    if (!stored) {
+        const initial = {};
+        applications.forEach(app => {
+            if (app !== 'Other') initial[app] = 0;
+        });
+        localStorage.setItem('appRegistrations', JSON.stringify(initial));
+        return initial;
+    }
+    return JSON.parse(stored);
+}
+
+// Function to update registration count
+function incrementAppCount(appName) {
+    if (appName === 'Other') return;
+    const counts = getRegistrationCounts();
+    counts[appName] = (counts[appName] || 0) + 1;
+    localStorage.setItem('appRegistrations', JSON.stringify(counts));
+}
+
+// Function to load application options with slot counts
+function loadApplicationCounts() {
+    const counts = getRegistrationCounts();
     appSelect.innerHTML = '';
 
     const defaultOption = document.createElement('option');
@@ -80,92 +102,97 @@ async function loadApplicationCounts() {
     defaultOption.textContent = 'Select Application';
     appSelect.appendChild(defaultOption);
 
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=slots`, { method: 'GET' });
-        const data = await response.json();
+    applications.forEach(app => {
+        const option = document.createElement('option');
+        option.value = app;
+        
+        if (app === 'Other') {
+            option.textContent = 'Other';
+        } else {
+            const count = counts[app] || 0;
+            option.textContent = `${app} (${count}/2 registered)`;
 
-        if (!data || !data.slots) {
-            throw new Error('Invalid slots data');
+            if (count >= 2) {
+                option.disabled = true;
+                option.textContent += ' - FULL';
+            }
         }
 
-        applications.forEach(app => {
-            const option = document.createElement('option');
-            option.value = app;
-            
-            if (app === 'Other') {
-                option.textContent = 'Other';
-            } else {
-                const slotInfo = data.slots[app] || { count: 0, remaining: 2, full: false };
-                option.textContent = `${app} (${slotInfo.count}/2 registered)`;
-
-                if (slotInfo.full) {
-                    option.disabled = true;
-                    option.textContent += ' - FULL';
-                }
-            }
-
-            appSelect.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error loading slots:', error);
-        applications.forEach(app => {
-            const option = document.createElement('option');
-            option.value = app;
-            option.textContent = app;
-            appSelect.appendChild(option);
-        });
-        showMessage('Unable to load real-time slots. Please refresh.', 'error');
-    }
+        appSelect.appendChild(option);
+    });
 }
 
-// Load application counts on page load and refresh periodically
+// Load application counts on page load
 loadApplicationCounts();
-setInterval(loadApplicationCounts, 15000);
 
-// Form submission handler
+// Form submission handler with Formspree and localStorage tracking
 registrationForm.addEventListener('submit', async function(event) {
     event.preventDefault();
+    
+    const selectedApp = appSelect.value === 'Other' ? customApplicationInput.value.trim() : appSelect.value;
+    
+    // Check if app is full (client-side validation)
+    if (appSelect.value !== 'Other') {
+        const counts = getRegistrationCounts();
+        if ((counts[selectedApp] || 0) >= 2) {
+            showMessage('This application is full. Please select another.', 'error');
+            return;
+        }
+    }
     
     // Disable form during submission
     submitButton.disabled = true;
     submitButton.textContent = 'Submitting...';
     registrationForm.classList.add('loading');
     
-    const formData = {
-        name: document.getElementById('fullName').value.trim(),
-        department: document.getElementById('department').value.trim(),
-        year: document.getElementById('year').value,
-        email: document.getElementById('email').value.trim().toLowerCase(),
-        phone: document.getElementById('mobile').value.trim(),
-        application: appSelect.value === 'Other' ? customApplicationInput.value.trim() : appSelect.value
-    };
+    // Handle "Other" application case
+    if (appSelect.value === 'Other' && customApplicationInput.value.trim()) {
+        const tempInput = document.createElement('input');
+        tempInput.type = 'hidden';
+        tempInput.name = 'application';
+        tempInput.value = customApplicationInput.value.trim();
+        registrationForm.appendChild(tempInput);
+    }
+    
+    const formData = new FormData(registrationForm);
     
     try {
-        if (!SCRIPT_URL || SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-            throw new Error('Apps Script URL not configured');
-        }
-
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
             method: 'POST',
-            body: JSON.stringify({ action: 'register', data: formData })
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
         });
 
-        const result = await response.json();
-
-        if (!result.success) {
-            showMessage(result.message || 'Registration failed.', 'error');
-            return;
+        if (response.ok) {
+            // Increment the count in localStorage
+            incrementAppCount(selectedApp);
+            
+            showMessage(`Registration successful for ${selectedApp}!`, 'success');
+            registrationForm.reset();
+            customApplicationInput.style.display = 'none';
+            customApplicationLabel.style.display = 'none';
+            
+            // Refresh the dropdown to show updated counts
+            loadApplicationCounts();
+        } else {
+            const data = await response.json();
+            if (data.errors) {
+                showMessage('Registration failed: ' + data.errors.map(e => e.message).join(', '), 'error');
+            } else {
+                showMessage('Registration failed. Please try again.', 'error');
+            }
         }
-
-        showMessage(`Registration successful for ${formData.application}!`, 'success');
-        registrationForm.reset();
-        await loadApplicationCounts();
     } catch (error) {
         console.error('Error during registration:', error);
-        showMessage('Registration failed. Please try again. Error: ' + error.message, 'error');
+        showMessage('Registration failed. Please check your internet connection.', 'error');
     } finally {
         submitButton.disabled = false;
         submitButton.textContent = 'Register';
         registrationForm.classList.remove('loading');
+        // Remove any temporary inputs
+        const tempInputs = registrationForm.querySelectorAll('input[type="hidden"][name="application"]');
+        tempInputs.forEach(input => input.remove());
     }
 });
