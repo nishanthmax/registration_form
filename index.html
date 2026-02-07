@@ -12,11 +12,12 @@
             <img src="https://image2url.com/r2/default/images/1770038733791-77172792-f6ba-4fc8-9acd-bfc06e836ea2.png" alt="Vibe Zone Logo" class="logo-top">
             <p class="quote">YOUNG INDIANS YUVA CLUB OF JEPPIAAR ENGINEERING COLLEGE</p>
             <p class="present">present</p>
+            <p class="branding-team">BRANDING TEAM</p>
             <img src="https://image2url.com/r2/default/images/1770038846167-8e012742-0b6a-46a1-a3e7-3815c2f2d181.png" alt="Event Logo" class="logo-event">
         </div>
         <h1>Welcome to Vibe Zone</h1>
         <div id="message" class="message"></div>
-        <form id="registrationForm" action="https://formspree.io/f/mbdkpjpb" method="POST">
+        <form id="registrationForm">
             <label for="fullName">Name:</label>
             <input type="text" id="fullName" name="name" required>
 
@@ -87,123 +88,6 @@
             <button type="submit" id="submitBtn">Register</button>
         </form>
     </div>
-    <script>
-        // Reset counts for fresh start (remove this line after testing)
-        localStorage.removeItem('appCounts');
-        
-        // Track app selections
-        const appCounts = JSON.parse(localStorage.getItem('appCounts')) || {};
-        const applications = [
-            'Google Drive',
-            'Google Docs',
-            'Google Sheets',
-            'Google Slides',
-            'Google Calendar',
-            'Gmail',
-            'Google Meet',
-            'Notion',
-            'Microsoft OneNote',
-            'Trello',
-            'Todoist',
-            'Clockify',
-            'LinkedIn',
-            'LinkedIn Learning',
-            'Coursera',
-            'Udemy',
-            'Khan Academy',
-            'GitHub',
-            'GitHub Desktop',
-            'Visual Studio Code',
-            'ChatGPT',
-            'Replit',
-            'Canva',
-            'Figma',
-            'Adobe Express',
-            'Indeed',
-            'Naukri',
-            'Internshala',
-            'Glassdoor',
-            'Google Forms',
-            'WhatsApp',
-            'Instagram',
-            'YouTube',
-            'Telegram',
-            'X (Twitter)',
-            'Other'
-        ];
-
-        const appSelect = document.getElementById('application');
-        const form = document.getElementById('registrationForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const customApplicationInput = document.getElementById('customApplication');
-        const customApplicationLabel = document.getElementById('customApplicationLabel');
-
-        // Handle "Other" option visibility
-        appSelect.addEventListener('change', function() {
-            if (this.value === 'Other') {
-                customApplicationInput.style.display = 'block';
-                customApplicationLabel.style.display = 'block';
-                customApplicationInput.required = true;
-            } else {
-                customApplicationInput.style.display = 'none';
-                customApplicationLabel.style.display = 'none';
-                customApplicationInput.required = false;
-                customApplicationInput.value = '';
-            }
-        });
-
-        // Initialize app counts
-        applications.forEach(app => {
-            if (!appCounts[app]) appCounts[app] = 0;
-        });
-
-        // Update dropdown options to show count and disable full apps
-        function updateAppOptions() {
-            appSelect.innerHTML = '<option value="">Select Application</option>';
-            applications.forEach(app => {
-                const option = document.createElement('option');
-                option.value = app;
-                
-                if (app === 'Other') {
-                    option.textContent = 'Other';
-                } else {
-                    const count = appCounts[app] || 0;
-                    option.textContent = `${app} (${count}/2 registered)`;
-                    
-                    if (count >= 2) {
-                        option.disabled = true;
-                        option.textContent += ' - FULL';
-                    }
-                }
-                appSelect.appendChild(option);
-            });
-        }
-
-        // Update on load
-        updateAppOptions();
-
-        // Handle form submission
-        form.addEventListener('submit', function(e) {
-            const selectedApp = appSelect.value;
-            
-            if (appCounts[selectedApp] >= 2) {
-                e.preventDefault();
-                alert('❌ This app is FULL. Maximum 2 participants reached. Please select another app.');
-                return false;
-            }
-
-            // Increment count after successful submission
-            appCounts[selectedApp] = (appCounts[selectedApp] || 0) + 1;
-            localStorage.setItem('appCounts', JSON.stringify(appCounts));
-
-            // Show success and update options
-            setTimeout(() => {
-                updateAppOptions();
-                alert('✅ Registration submitted!');
-            }, 500);
-        });
-    </script>
-
-    <!-- Formspree handles submission; no JS required -->
+    <script src="script.js"></script>
 </body>
 </html>

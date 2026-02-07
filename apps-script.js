@@ -1,6 +1,42 @@
 const SHEET_NAME = 'Registrations';
 const MAX_PER_APP = 2;
-const APPS = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT'];
+const APPS = [
+    'Google Drive',
+    'Google Docs',
+    'Google Sheets',
+    'Google Slides',
+    'Google Calendar',
+    'Gmail',
+    'Google Meet',
+    'Notion',
+    'Microsoft OneNote',
+    'Trello',
+    'Todoist',
+    'Clockify',
+    'LinkedIn',
+    'LinkedIn Learning',
+    'Coursera',
+    'Udemy',
+    'Khan Academy',
+    'GitHub',
+    'GitHub Desktop',
+    'Visual Studio Code',
+    'ChatGPT',
+    'Replit',
+    'Canva',
+    'Figma',
+    'Adobe Express',
+    'Indeed',
+    'Naukri',
+    'Internshala',
+    'Glassdoor',
+    'Google Forms',
+    'WhatsApp',
+    'Instagram',
+    'YouTube',
+    'Telegram',
+    'X (Twitter)'
+];
 
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || 'slots';
@@ -24,7 +60,8 @@ function doPost(e) {
       return json({ success: false, message: 'All fields are required.' });
     }
 
-    if (APPS.indexOf(data.application) === -1) {
+    // Allow "Other" or any app in the APPS list
+    if (data.application !== 'Other' && APPS.indexOf(data.application) === -1) {
       return json({ success: false, message: 'Invalid application.' });
     }
 
@@ -37,14 +74,16 @@ function doPost(e) {
       return json({ success: false, message: 'This email has already been used for registration.' });
     }
 
-    // Count app registrations
-    const appCount = values.reduce((count, row, i) => {
-      if (i === 0) return count;
-      return row[6] === data.application ? count + 1 : count;
-    }, 0);
+    // Count app registrations (skip "Other" from max limit)
+    if (data.application !== 'Other') {
+      const appCount = values.reduce((count, row, i) => {
+        if (i === 0) return count;
+        return row[6] === data.application ? count + 1 : count;
+      }, 0);
 
-    if (appCount >= MAX_PER_APP) {
-      return json({ success: false, message: 'Maximum registrations reached for this app.' });
+      if (appCount >= MAX_PER_APP) {
+        return json({ success: false, message: 'Maximum registrations reached for this app.' });
+      }
     }
 
     sheet.appendRow([

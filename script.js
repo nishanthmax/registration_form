@@ -23,7 +23,44 @@ appSelect.addEventListener('change', function() {
     }
 });
 
-const applications = ['WhatsApp', 'Canva', 'Google Pay', 'Instagram', 'ChatGPT', 'Other'];
+const applications = [
+    'Google Drive',
+    'Google Docs',
+    'Google Sheets',
+    'Google Slides',
+    'Google Calendar',
+    'Gmail',
+    'Google Meet',
+    'Notion',
+    'Microsoft OneNote',
+    'Trello',
+    'Todoist',
+    'Clockify',
+    'LinkedIn',
+    'LinkedIn Learning',
+    'Coursera',
+    'Udemy',
+    'Khan Academy',
+    'GitHub',
+    'GitHub Desktop',
+    'Visual Studio Code',
+    'ChatGPT',
+    'Replit',
+    'Canva',
+    'Figma',
+    'Adobe Express',
+    'Indeed',
+    'Naukri',
+    'Internshala',
+    'Glassdoor',
+    'Google Forms',
+    'WhatsApp',
+    'Instagram',
+    'YouTube',
+    'Telegram',
+    'X (Twitter)',
+    'Other'
+];
 
 // Function to show messages
 function showMessage(message, type) {
